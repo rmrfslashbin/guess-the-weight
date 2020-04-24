@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import argparse
+import tests
+
+def main():
+    parser = argparse.ArgumentParser(description="Optimize plates")
+    parser.add_argument("--tries", type=int, default=10, help="Max number of tries (default: 10)")
+    parser.add_argument("--goal", type=int, required=True, help="Weight goal")
+    parser.add_argument(
+        "--bar",
+        type=int,
+        choices=[
+            7,
+            22],
+        required=True,
+        help="Bar weight")
+
+    subparsers = parser.add_subparsers(dest="cmd", required=True, help='sub-command help')
+    subparsers.add_parser('range')
+    subparsers.add_parser('pong')
+
+    args = parser.parse_args()
+
+    # Set the weight of the bar
+    bar = args.bar
+
+    # Define the plate weights and quantities
+    weights = {
+        "a": {"wght": 13.2, "qty": 4},
+        "b": {"wght": 10, "qty": 4},
+        "c": {"wght": 8.8, "qty": 6},
+        "d": {"wght": 8, "qty": 2},
+        "e": {"wght": 5, "qty": 4},
+        "q": {"wght": bar, "qty": 1}
+    }
+
+    # The goal weight
+    goal = args.goal
+
+    
+    s = False
+    if args.cmd == "range":
+        upper = goal
+        lower = goal
+
+        tries = 0
+        while s == False:
+            upper = upper + 1
+            lower = lower - 1
+            tries = tries + 1
+            s = tests.test_range(weights, upper, lower)
+            if tries > args.tries:
+                break
+
+    elif args.cmd == "pong":
+        tries = 0
+        eo = True
+        while s == False:
+            if eo:
+                upper = goal + tries + 1
+                lower = goal + tries - 1
+                eo = False
+            else:
+                upper = goal - tries + 1
+                lower = goal - tries - 1
+                eo = True
+            tries = tries + 1
+            s = tests.test_range(weights, upper, lower) 
+            if tries > args.tries:
+                break
+
+    if s:
+        print(f"After {tries} tries...\n")
+        m = s.model()
+        gt = 0
+        pt = 0
+        for i in m:
+            if str(i) == "q":
+                continue
+            count = m[i].as_long()
+            weight = weights[str(i)]["wght"]
+            if count == 0:
+                continue
+            total = count * weight
+            gt = gt + total
+            pt = pt + count
+            print(f"{weight} * {count} = {round(total,2)}")
+        gt = gt + bar
+        print()
+        print(f"Bar: {bar}")
+        print(f"Plates: {pt}")
+        print(f"Total: {round(gt,2)}")
+    else:
+        print("I give up. There's no combo for this weight goal.")
+
+
+if __name__ == "__main__":
+    main()
