@@ -1,4 +1,4 @@
-# guess-the-weeight
+# guess-the-weight
 [Z3 solver](https://github.com/Z3Prover/z3) PoC to calculate a weight plate combo to hit the desired weight.
 
 ## Install
